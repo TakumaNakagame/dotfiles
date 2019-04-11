@@ -16,20 +16,24 @@ export LANG=ja_JP.UTF-8
 autoload -Uz colors
 colors
 
-# emacs 風キーバインドにする
-bindkey -e
-
 # ヒストリの設定
 HISTFILE=~/.zsh_history
 HISTSIZE=1000000
 SAVEHIST=1000000
 
-# プロンプト
-# 1行表示
-# PROMPT="%~ %# "
-# 2行表示
-PROMPT="%{${fg[green]}%}[%n@%m]%{${reset_color}%} %~
-%# "
+
+########################################
+# vcs_info
+autoload -Uz vcs_info
+autoload -Uz add-zsh-hook
+
+zstyle ':vcs_info:*' formats '%F{green}(%b)%f'
+zstyle ':vcs_info:*' actionformats '%F{red}(%b|%a)%f'
+
+function _update_vcs_info_msg() {
+    LANG=en_US.UTF-8 vcs_info
+}
+add-zsh-hook precmd _update_vcs_info_msg
 
 
 # 単語の区切り文字を指定する
@@ -59,21 +63,15 @@ zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin \
 # ps コマンドのプロセス名補完
 zstyle ':completion:*:processes' command 'ps x -o pid,s,args'
 
+# zsh-kubectl-prompt読み込み
+source /home/linuxbrew/.linuxbrew/Cellar/zsh-kubectl-prompt/v1.1.0/etc/zsh-kubectl-prompt/kubectl.zsh
 
-########################################
-# vcs_info
-autoload -Uz vcs_info
-autoload -Uz add-zsh-hook
+# プロンプトの設定
+PROMPT="%{${fg[green]}%}[%n@%m]%{${reset_color}%} ${vcs_info_msg_0_} %~
+%{${fg[green]}%}🐧%{$reset_color%} "
 
-zstyle ':vcs_info:*' formats '%F{green}(%s)-[%b]%f'
-zstyle ':vcs_info:*' actionformats '%F{red}(%s)-[%b|%a]%f'
-
-function _update_vcs_info_msg() {
-    LANG=en_US.UTF-8 vcs_info
-    RPROMPT="${vcs_info_msg_0_}"
-}
-add-zsh-hook precmd _update_vcs_info_msg
-
+RPROMPT=$ZSH_KUBECTL_PROMPT
+zstyle ':zsh-kubectl-prompt:' separator '|'
 
 ########################################
 # オプション
@@ -259,11 +257,6 @@ if [ -f '/home/takuma/google-cloud-sdk/path.zsh.inc' ]; then . '/home/takuma/goo
 # The next line enables shell command completion for gcloud.
 if [ -f '/home/takuma/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/takuma/google-cloud-sdk/completion.zsh.inc'; fi
 
-autoload -U colors; colors
-source /home/linuxbrew/.linuxbrew/etc/zsh-kubectl-prompt/kubectl.zsh
-RPROMPT='%{$fg[blue]%}($ZSH_KUBECTL_PROMPT)%{$reset_color%}'
-export KUBE_PROMPT_INFO_PREFIX="%{$fg[yellow]%}("
-export KUBE_PROMPT_INFO_SUFFIX=")%{$reset_color%}"
 alias k="kubectl"
 alias kx="kubectx"
 alias kns="kubens"
