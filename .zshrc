@@ -175,7 +175,8 @@ alias review='docker run --rm -v $(pwd):/work -v $(pwd)/.texmf-var:/root/.texmf-
 alias docui='docker run --rm -itv /var/run/docker.sock:/var/run/docker.sock skanehira/docui'
 export PATH=$HOME/.nodebrew/current/bin:$PATH
 export PATH='/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin':"$PATH"
-
+export DOCKER_HOST='tcp://0.0.0.0:2375'
+export PATH=$PATH:~/terraform/
 
 ############################################
 #シェル開始時にTmuxを開始する
