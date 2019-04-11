@@ -69,4 +69,4 @@ nmap <Esc><Esc> :nohlsearch<CR><Esc>
 syntax enable
 
 set background=dark
-colorscheme solarized
+"colorscheme solarized

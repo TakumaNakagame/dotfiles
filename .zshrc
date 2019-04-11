@@ -242,3 +242,27 @@ function tmux_automatically_attach_session()
 }
 tmux_automatically_attach_session
 
+export DOCKER_HOST='tcp://0.0.0.0:2375'
+source <(kubectl completion zsh)
+export PATH=$HOME/.nodebrew/current/bin:$PATH
+export PATH="$HOME/.linuxbrew/bin:$PATH"
+export MANPATH="$HOME/.linuxbrew/share/man:$MANPATH"
+export INFOPATH="$HOME/.linuxbrew/share/info:$INFOPATH"
+export XDG_DATA_DIRS="$HOME/.linuxbrew/share:$XDG_DATA_DIRS"
+umask 002
+export PATH=$HOME/.nodebrew/current/bin:$PATH
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/takuma/google-cloud-sdk/path.zsh.inc' ]; then . '/home/takuma/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/home/takuma/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/takuma/google-cloud-sdk/completion.zsh.inc'; fi
+
+autoload -U colors; colors
+source /home/linuxbrew/.linuxbrew/etc/zsh-kubectl-prompt/kubectl.zsh
+RPROMPT='%{$fg[blue]%}($ZSH_KUBECTL_PROMPT)%{$reset_color%}'
+export KUBE_PROMPT_INFO_PREFIX="%{$fg[yellow]%}("
+export KUBE_PROMPT_INFO_SUFFIX=")%{$reset_color%}"
+alias k="kubectl"
+alias kx="kubectx"
+alias kns="kubens"
