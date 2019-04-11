@@ -70,7 +70,8 @@ source /home/linuxbrew/.linuxbrew/Cellar/zsh-kubectl-prompt/v1.1.0/etc/zsh-kubec
 PROMPT="%{${fg[green]}%}[%n@%m]%{${reset_color}%} ${vcs_info_msg_0_} %~
 %{${fg[green]}%}🐧%{$reset_color%} "
 
-RPROMPT=$ZSH_KUBECTL_PROMPT
+RPROMPT="%{${fg[green]}%}$ZSH_KUBECTL_PROMPT%{${reset_color}%}"
+PROMPT2="%{${fg[green]}%}🐈%{${reset_color}%} "
 zstyle ':zsh-kubectl-prompt:' separator '|'
 
 ########################################
