@@ -64,15 +64,17 @@ zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin \
 zstyle ':completion:*:processes' command 'ps x -o pid,s,args'
 
 # zsh-kubectl-prompt読み込み
-source /home/linuxbrew/.linuxbrew/Cellar/zsh-kubectl-prompt/v1.1.0/etc/zsh-kubectl-prompt/kubectl.zsh
+source /home/linuxbrew/.linuxbrew/Cellar/zsh-kubectl-prompt/v1.3.0/etc/zsh-kubectl-prompt/kubectl.zsh
 
 # プロンプトの設定
-PROMPT="%{${fg[green]}%}[%n@%m]%{${reset_color}%} ${vcs_info_msg_0_} %~
-%{${fg[green]}%}🐧%{$reset_color%} "
+PENGUIN=$'\U1F427'
 
+PROMPT="%{${fg[green]}%}[%n@%m]%{${reset_color}%} ${vcs_info_msg_0_} %~
+%{${fg[green]}%}(・Θ・)%{$reset_color%} "
 RPROMPT="%{${fg[green]}%}$ZSH_KUBECTL_PROMPT%{${reset_color}%}"
 PROMPT2="%{${fg[green]}%}🐈%{${reset_color}%} "
-zstyle ':zsh-kubectl-prompt:' separator '|'
+zstyle ':zsh-kubectl-prompt:' separator ' | '
+
 
 ########################################
 # オプション
@@ -98,9 +100,6 @@ setopt auto_cd
 setopt auto_pushd
 # 重複したディレクトリを追加しない
 setopt pushd_ignore_dups
-
-# 同時に起動したzshの間でヒストリを共有する
-setopt share_history
 
 # 同じコマンドをヒストリに残さない
 setopt hist_ignore_all_dups
@@ -177,70 +176,11 @@ export PATH='/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin':"$P
 export DOCKER_HOST='tcp://0.0.0.0:2375'
 export PATH=$PATH:~/terraform/
 
-############################################
-#シェル開始時にTmuxを開始する
-
-function is_exists() { type "$1" >/dev/null 2>&1; return $?; }
-function is_osx() { [[ $OSTYPE == darwin* ]]; }
-function is_screen_running() { [ ! -z "$STY" ]; }
-function is_tmux_runnning() { [ ! -z "$TMUX" ]; }
-function is_screen_or_tmux_running() { is_screen_running || is_tmux_runnning; }
-function shell_has_started_interactively() { [ ! -z "$PS1" ]; }
-function is_ssh_running() { [ ! -z "$SSH_CONECTION" ]; }
-
-function tmux_automatically_attach_session()
-{
-    if is_screen_or_tmux_running; then
-        ! is_exists 'tmux' && return 1
-
-        if is_tmux_runnning; then
-            echo "${fg_bold[red]} _____ __  __ _   ___  __ ${reset_color}"
-            echo "${fg_bold[red]}|_   _|  \/  | | | \ \/ / ${reset_color}"
-            echo "${fg_bold[red]}  | | | |\/| | | | |\  /  ${reset_color}"
-            echo "${fg_bold[red]}  | | | |  | | |_| |/  \  ${reset_color}"
-            echo "${fg_bold[red]}  |_| |_|  |_|\___//_/\_\ ${reset_color}"
-        elif is_screen_running; then
-            echo "This is on screen."
-        fi
-    else
-        if shell_has_started_interactively && ! is_ssh_running; then
-            if ! is_exists 'tmux'; then
-                echo 'Error: tmux command not found' 2>&1
-                return 1
-            fi
-
-            if tmux has-session >/dev/null 2>&1 && tmux list-sessions | grep -qE '.*]$'; then
-                # detached session exists
-                tmux list-sessions
-                echo -n "Tmux: attach? (y/N/num) "
-                read
-                if [[ "$REPLY" =~ ^[Yy]$ ]] || [[ "$REPLY" == '' ]]; then
-                    tmux attach-session
-                    if [ $? -eq 0 ]; then
-                        echo "$(tmux -V) attached session"
-                        return 0
-                    fi
-                elif [[ "$REPLY" =~ ^[0-9]+$ ]]; then
-                    tmux attach -t "$REPLY"
-                    if [ $? -eq 0 ]; then
-                        echo "$(tmux -V) attached session"
-                        return 0
-                    fi
-                fi
-            fi
-
-            if is_osx && is_exists 'reattach-to-user-namespace'; then
-                # on OS X force tmux's default command
-                # to spawn a shell in the user's namespace
-                tmux_config=$(cat $HOME/.tmux.conf <(echo 'set-option -g default-command "reattach-to-user-namespace -l $SHELL"'))
-                tmux -f <(echo "$tmux_config") new-session && echo "$(tmux -V) created new session supported OS X"
-            else
-                tmux new-session && echo "tmux created new session"
-            fi
-        fi
-    fi
-}
-tmux_automatically_attach_session
+# terminal char encording
+case $TERM in
+    linux) LANG=C ;;
+    *)     LANG=ja_JP.UTF-8;;
+esac
 
 export DOCKER_HOST='tcp://0.0.0.0:2375'
 source <(kubectl completion zsh)
@@ -251,6 +191,7 @@ export INFOPATH="$HOME/.linuxbrew/share/info:$INFOPATH"
 export XDG_DATA_DIRS="$HOME/.linuxbrew/share:$XDG_DATA_DIRS"
 umask 002
 export PATH=$HOME/.nodebrew/current/bin:$PATH
+export PATH=$HOME/.local/bin:$PATH
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/home/takuma/google-cloud-sdk/path.zsh.inc' ]; then . '/home/takuma/google-cloud-sdk/path.zsh.inc'; fi
@@ -261,3 +202,15 @@ if [ -f '/home/takuma/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/taku
 alias k="kubectl"
 alias kx="kubectx"
 alias kns="kubens"
+alias sz="echo 'reload ~/.zshrc' && source ~/.zshrc"
+if [[ -x `which colordiff` ]]; then
+  alias diff='colordiff'
+fi
+export PATH=/home/takuma/go/bin:$PATH
+source <(stern --completion=zsh)
+source <(helm completion zsh)
+
+# kubeconfig file
+export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config
+export KUBECONFIG=$KUBECONFIG:$HOME/.kube/sob-config
+export KUBECONFIG=$KUBECONFIG:$HOME/.kube/shirayuki-config
