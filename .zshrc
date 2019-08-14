@@ -2,7 +2,11 @@
 autoload -U compinit
 compinit
 
+# 色を使用出来るようにする
+autoload -Uz colors
+colors
 
+# ヒストリの設定
 # 少し凝った zshrc
 # License : MIT
 # http://mollifier.mit-license.org/
@@ -10,13 +14,38 @@ compinit
 ########################################
 # 環境変数
 export LANG=ja_JP.UTF-8
+export MANPATH="$HOME/.linuxbrew/share/man:$MANPATH"
+export INFOPATH="$HOME/.linuxbrew/share/info:$INFOPATH"
+export XDG_DATA_DIRS="$HOME/.linuxbrew/share:$XDG_DATA_DIRS"
+export PATH="$HOME/.linuxbrew/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.nodebrew/current/bin:$PATH"
+export PATH="$HOME/go/bin:$PATH"
+export PATH='/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin':"$PATH"
+export PATH="$PATH:~/terraform/"
 
+# kubeconfig file
+export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config
+export KUBECONFIG=$KUBECONFIG:$HOME/.kube/sob-config
+export KUBECONFIG=$KUBECONFIG:$HOME/.kube/shirayuki-config
+export KUBECONFIG=$KUBECONFIG:$HOME/.kube/shirayuki-is1b-config
 
-# 色を使用出来るようにする
-autoload -Uz colors
-colors
+# Alias
+alias k="kubectl"
+alias kx="kubectx"
+alias kns="kubens"
+alias review='docker run --rm -v $(pwd):/work -v $(pwd)/.texmf-var:/root/.texmf-var vvakame/review:latest /bin/sh -c "cd /work && review-pdfmaker config.yml"'
+alias docui='docker run --rm -itv /var/run/docker.sock:/var/run/docker.sock skanehira/docui'
+alias sz="echo 'reload ~/.zshrc' && source ~/.zshrc"
+if [[ -x `which colordiff` ]]; then
+  alias diff='colordiff'
+fi
 
-# ヒストリの設定
+# Source
+source <(kubectl completion zsh)
+source <(stern --completion=zsh)
+source <(helm completion zsh)
+
 HISTFILE=~/.zsh_history
 HISTSIZE=1000000
 SAVEHIST=1000000
@@ -69,11 +98,11 @@ source /home/linuxbrew/.linuxbrew/Cellar/zsh-kubectl-prompt/v1.3.0/etc/zsh-kubec
 # プロンプトの設定
 PENGUIN=$'\U1F427'
 
+zstyle ':zsh-kubectl-prompt:' separator ' | '
 PROMPT="%{${fg[green]}%}[%n@%m]%{${reset_color}%} ${vcs_info_msg_0_} %~
 %{${fg[green]}%}(・Θ・)%{$reset_color%} "
 RPROMPT="%{${fg[green]}%}$ZSH_KUBECTL_PROMPT%{${reset_color}%}"
 PROMPT2="%{${fg[green]}%}🐈%{${reset_color}%} "
-zstyle ':zsh-kubectl-prompt:' separator ' | '
 
 
 ########################################
@@ -169,29 +198,13 @@ esac
 
 # vim:set ft=zsh:
 
-alias review='docker run --rm -v $(pwd):/work -v $(pwd)/.texmf-var:/root/.texmf-var vvakame/review:latest /bin/sh -c "cd /work && review-pdfmaker config.yml"'
-alias docui='docker run --rm -itv /var/run/docker.sock:/var/run/docker.sock skanehira/docui'
-export PATH=$HOME/.nodebrew/current/bin:$PATH
-export PATH='/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin':"$PATH"
-export DOCKER_HOST='tcp://0.0.0.0:2375'
-export PATH=$PATH:~/terraform/
-
 # terminal char encording
 case $TERM in
     linux) LANG=C ;;
     *)     LANG=ja_JP.UTF-8;;
 esac
 
-export DOCKER_HOST='tcp://0.0.0.0:2375'
-source <(kubectl completion zsh)
-export PATH=$HOME/.nodebrew/current/bin:$PATH
-export PATH="$HOME/.linuxbrew/bin:$PATH"
-export MANPATH="$HOME/.linuxbrew/share/man:$MANPATH"
-export INFOPATH="$HOME/.linuxbrew/share/info:$INFOPATH"
-export XDG_DATA_DIRS="$HOME/.linuxbrew/share:$XDG_DATA_DIRS"
 umask 002
-export PATH=$HOME/.nodebrew/current/bin:$PATH
-export PATH=$HOME/.local/bin:$PATH
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/home/takuma/google-cloud-sdk/path.zsh.inc' ]; then . '/home/takuma/google-cloud-sdk/path.zsh.inc'; fi
@@ -199,18 +212,14 @@ if [ -f '/home/takuma/google-cloud-sdk/path.zsh.inc' ]; then . '/home/takuma/goo
 # The next line enables shell command completion for gcloud.
 if [ -f '/home/takuma/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/takuma/google-cloud-sdk/completion.zsh.inc'; fi
 
-alias k="kubectl"
-alias kx="kubectx"
-alias kns="kubens"
-alias sz="echo 'reload ~/.zshrc' && source ~/.zshrc"
-if [[ -x `which colordiff` ]]; then
-  alias diff='colordiff'
-fi
-export PATH=/home/takuma/go/bin:$PATH
-source <(stern --completion=zsh)
-source <(helm completion zsh)
-
-# kubeconfig file
-export KUBECONFIG=$KUBECONFIG:$HOME/.kube/config
-export KUBECONFIG=$KUBECONFIG:$HOME/.kube/sob-config
-export KUBECONFIG=$KUBECONFIG:$HOME/.kube/shirayuki-config
+# fshow - git commit browser
+fshow() {
+  git log --graph --color=always \
+      --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
+  fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
+      --bind "ctrl-m:execute:
+                (grep -o '[a-f0-9]\{7\}' | head -1 |
+                xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+                {}
+FZF-EOF"
+}
