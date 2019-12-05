@@ -1,4 +1,7 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =2
+let g:netrw_dirhist_cnt =5
 let g:netrw_dirhist_1='/home/takuma/.vim'
 let g:netrw_dirhist_2='/mnt/c/Users/t-nakagame/DevWorks/TakumaNakagame/kube-all-in-one'
+let g:netrw_dirhist_3='/home/takuma/.zprezto'
+let g:netrw_dirhist_4='/home/takuma/DevWorks/sakura/sob/apps/easy-api-sv'
+let g:netrw_dirhist_5='/home/takuma/DevWorks/sakura/sob/apps/ubuntu'
